@@ -1,7 +1,7 @@
 import telegram
 import os
 import logging
-from dotenv import load_dotenv
+from environs import Env
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -14,7 +14,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-load_dotenv()
+env = Env()
+env.read_env()
 TOKEN=os.environ["TG_TOKEN"]
 bot = telegram.Bot(token=TOKEN)
 

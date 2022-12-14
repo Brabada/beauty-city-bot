@@ -1,2 +1,2 @@
-python-dotenv==0.20.0
+environs==9.5.*
 python-telegram-bot==13.13
