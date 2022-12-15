@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'beauty_saloon_db.apps.BeautySaloonDbConfig',
-    "phonenumber_field"
+    "phonenumber_field",
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
