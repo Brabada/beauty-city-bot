@@ -1,0 +1,5 @@
+django==4.1.*
+environs==9.5.*
+dj-database-url=1.2.*
+django-phonenumber-field=7.0.*
+
