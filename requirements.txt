@@ -3,4 +3,4 @@ environs==9.5.*
 dj-database-url=1.2.*
 django-phonenumber-field=7.0.*
 djangorestframework=3.14.*
-
+aiogram==2.23.1
