@@ -26,5 +26,9 @@ $ cd %рабочий_каталог%
 $ python manage.py runserver
 ```
 
-## Замечания
+## REST API
 
+Получить все салоны:
+```text
+api/v1/beauty_saloon_db/saloon/all/
+```
