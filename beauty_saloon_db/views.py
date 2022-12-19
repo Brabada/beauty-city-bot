@@ -42,7 +42,7 @@ class DaysListView(generics.ListAPIView):
 class DayListMastersView(APIView):
     def get(self, request, year, month, day, saloon):
         date = datetime.date(year, month, day)
-        days = Day.objects.filter(date__exact=date, saloon__name__exact=saloon)
+        days = Day.objects.filter(date__exact=date, saloon__pk=saloon)
         # days = Day.objects.filter(date__exact=date,
         # saloon__name__exact=saloon) а так не выводит
 

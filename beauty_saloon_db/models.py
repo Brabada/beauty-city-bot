@@ -22,8 +22,8 @@ class Client(models.Model):
 class Saloon(models.Model):
     name = models.CharField('Название салона', max_length=200)
     address = models.CharField('Адрес', max_length=400)
-    longitude = models.FloatField('Долгота')
-    latitude = models.FloatField('Широта')
+    # longitude = models.FloatField('Долгота', blank=True)
+    # latitude = models.FloatField('Широта', blank=True)
 
     def __str__(self):
         return f"{self.name} {self.address}"
@@ -47,11 +47,7 @@ class Master(models.Model):
                                       blank=True,
                                       related_name='masters',
                                       verbose_name='Услуги')
-    saloons = models.ManyToManyField(Saloon,
-                                     blank=True,
-                                     null=True,
-                                     related_name='masters',
-                                     verbose_name='Салоны')
+
 
     def __str__(self):
         return f"{self.name}"
@@ -110,6 +106,7 @@ class WorkingTime(models.Model):
                             on_delete=models.CASCADE,
                             related_name='working_times',
                             verbose_name='День')
+
 
     def __str__(self):
         return f"{self.day.date} {self.starting_time} " \

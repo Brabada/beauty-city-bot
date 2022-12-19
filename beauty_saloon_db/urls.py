@@ -15,6 +15,6 @@ urlpatterns = [
     path('saloon/<int:pk>/', SaloonDetailView.as_view()),
     path('service/all/', ServicesListView.as_view()),
     path('day/week/', DaysListView.as_view()),
-    path('day/<int:year>/<int:month>/<int:day>/<str:saloon>/masters/',
+    path('day/<int:year>/<int:month>/<int:day>/<int:saloon>/masters/',
          DayListMastersView.as_view()),
 ]
