@@ -30,5 +30,22 @@ $ python manage.py runserver
 
 Получить все салоны:
 ```text
-api/v1/beauty_saloon_db/saloon/all/
+api/v1/saloon/all/
 ```
+
+Получить все услуги:
+```text
+api/v1/service/all/
+```
+
+Получить следующие 7 дней, включая текущий:
+```text
+api/v1/day/week/
+```
+
+Получить рабочий график (WorkingDays) за определенную дату по определенному салону:
+```text
+api/v1/day/<int:year>/<int:month>/<int:day>/<str:saloon_name>/masters/
+```
+Пример запроса:
+_/api/v1/day/2022/12/24/puregold/masters/_
