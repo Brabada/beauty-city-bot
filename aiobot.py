@@ -8,6 +8,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types.message import ContentType
 from environs import Env
+import requests
 
 
 env = Env()
@@ -23,9 +24,6 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
-# prices
-PRICE = types.LabeledPrice(label="Стоимость одной услуги", amount=500*100)  # в копейках (руб)
-
 
 class Visit:
     saloon_id = None
@@ -38,52 +36,50 @@ class User:
 
 
 def get_saloons():
-    saloons = [{'id': 1, 'name': 'Vibe', 'address': '12345'},
-               {'id': 2, 'name': 'Milane', 'address': '12345'},
-               {'id': 3, 'name': 'Грусть', 'address': '12345'}, ]
+    response = requests.get('http://127.0.0.1:8000/api/v1/saloon/all/')
+    saloons = response.json()
+    print(saloons)
     return saloons
 
 def get_services():
-    services = [
-        {'id': 1, 'name': 'Ногти'},
-        {'id': 2, 'name': 'Волосы'},
-        {'id': 3, 'name': 'Брови'}
-    ]
+    response = requests.get('http://127.0.0.1:8000/api/v1/service/all/')
+    services = response.json()
+    print(services)
     return services
 
 
 def get_days():
-    days = [
-        {'id': 1, 'date': '19.12.2022'},
-        {'id': 2, 'date': '20.12.2022'},
-        {'id': 3, 'date': '21.12.2022'}
-    ]
+    response = requests.get('http://127.0.0.1:8000/api/v1/day/week/')
+    days = response.json()
+    print(days)
     return days
 
 
-def get_masters():
+def get_masters(year, month, day, saloon):
+    response = requests.get(f'http://127.0.0.1:8000/api/v1/day/{year}/{month}/{day}/{saloon}/masters/')
+    masters = response.json()
 
-    masters = [
-        {'id': 1, 'name': 'Ольга',
-         'dates': [
-             {'date': '19.12.2022', 'saloon_id': 1, 'times': [
-                 {'id': 1, 'time_interval': '10:00-11:00', 'busy': True},
-                 {'id': 2, 'time_interval': '11:00-12:00', 'busy': True}]},
-             {'date': '20.12.2022', 'saloon_id': 2}],
-         'services': [1, 2, 3]},
-        {'id': 2, 'name': 'Полина',
-         'dates': [
-             {'date': '19.12.2022', 'saloon_id': 1, 'times': [
-                 {'id':1, 'time_interval': '10:00-11:00', 'busy': False},
-                 {'id':2, 'time_interval': '11:00-12:00', 'busy': True}]},
-                   {'date': '20.12.2022', 'saloon_id': 2}],
-         'services': [1, 2, 3]},
-        {'id': 3, 'name': 'Юлия',
-         'dates': [{'date': '19.12.2022', 'saloon_id': 1},
-                   {'date': '20.12.2022', 'saloon_id': 2}],
-         'services': [1, 2, 3]}
-
-    ]
+    # masters = [
+    #     {'id': 1, 'name': 'Ольга',
+    #      'dates': [
+    #          {'date': '19.12.2022', 'saloon_id': 1, 'times': [
+    #              {'id': 1, 'time_interval': '10:00-11:00', 'busy': True},
+    #              {'id': 2, 'time_interval': '11:00-12:00', 'busy': True}]},
+    #          {'date': '20.12.2022', 'saloon_id': 2}],
+    #      'services': [1, 2, 3]},
+    #     {'id': 2, 'name': 'Полина',
+    #      'dates': [
+    #          {'date': '19.12.2022', 'saloon_id': 1, 'times': [
+    #              {'id':1, 'time_interval': '10:00-11:00', 'busy': False},
+    #              {'id':2, 'time_interval': '11:00-12:00', 'busy': True}]},
+    #                {'date': '20.12.2022', 'saloon_id': 2}],
+    #      'services': [1, 2, 3]},
+    #     {'id': 3, 'name': 'Юлия',
+    #      'dates': [{'date': '19.12.2022', 'saloon_id': 1},
+    #                {'date': '20.12.2022', 'saloon_id': 2}],
+    #      'services': [1, 2, 3]}
+    #
+    # ]
 
     return masters
 
@@ -117,9 +113,7 @@ class RegStates(StatesGroup):
 async def start(message: types.Message):
     print('start handler')
     print(message.from_user.id)
-    user = get_user(message.from_user.id)
-    # user.visit = Visit()
-    # user
+
 
     global main_menu_markup
     main_menu_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -146,7 +140,7 @@ async def main_menu(message: types.Message, state: FSMContext):
 
         saloons_buttons = [types.KeyboardButton(i['name']) for i in saloons]
 
-        saloons_markup.add(go_to_main_menu).row(*saloons_buttons)
+        saloons_markup.add(*saloons_buttons).row(go_to_main_menu)
         await bot.send_message(message.chat.id,
                                f"Выберите салон:",
                                reply_markup=saloons_markup)
@@ -181,7 +175,7 @@ async def select_salon(message: types.Message):
         services_markup.add(go_to_main_menu).row(*services_button)
 
         await bot.send_message(message.chat.id,
-                         f"Выберите салон:",
+                         f"Выберите услугу:",
                          reply_markup=services_markup)
         await RegStates.services.set()
 
@@ -214,7 +208,7 @@ async def select_service(message: types.Message):
         days_markup.add(go_to_main_menu).row(*days_buttons)
 
         await bot.send_message(message.chat.id,
-                         f"Выберите салон:",
+                         f"Выберите дату:",
                          reply_markup=days_markup)
         await RegStates.days.set()
 
@@ -237,18 +231,21 @@ async def select_day(message: types.Message):
     print(Visit.saloon_id)
     print(Visit.service_id)
     print(Visit.day_date)
+    year, month, day = Visit.day_date.split('-')
+    print(f'{year}{month}{day}')
+
 
     if message.text:
         masters_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
         go_to_main_menu = types.KeyboardButton("Главное меню📚")
-        masters = get_masters()
-        masters_buttons = [types.KeyboardButton(i['name']) for i in masters]
+        masters = get_masters(year, month, day, Visit.saloon_id)
+        masters_buttons = [types.KeyboardButton(i['master']) for i in masters]
 
         masters_markup.add(go_to_main_menu).row(*masters_buttons)
 
         await bot.send_message(message.chat.id,
-                         f"Выберите салон:",
+                         f"Выберите мастера:",
                          reply_markup=masters_markup)
         await RegStates.masters.set()
 
@@ -262,33 +259,32 @@ async def select_master(message: types.Message):
                                reply_markup=main_menu_markup)
 
         await RegStates.main_menu.set()
-
-    masters = get_masters()
+    year, month, day = Visit.day_date.split('-')
+    masters = get_masters(year, month, day, Visit.saloon_id)
     for master in masters:
-        if message.text == master['name']:
-            Visit.master_id = master['id']
+        if message.text == master['master']:
+            Visit.master_id = master['master']
 
     print(Visit.saloon_id)
     print(Visit.service_id)
     print(Visit.day_date)
     print(Visit.master_id)
 
+
     if message.text:
         times_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
         go_to_main_menu = types.KeyboardButton("Главное меню📚")
-        masters = get_masters()
+
         times = []
         for master in masters:
-            if master['id'] == Visit.master_id:
-                for date in master['dates']:
-                    print(date['date'])
-                    print(Visit.day_date)
-                    if date['date'] == Visit.day_date:
-                        times = date['times']
+            if master['master'] == Visit.master_id:
+                for interval in master['working_times']:
+                    times.append(f"{interval['starting_time']} - {interval['finishing_time']}")
 
+        print(times)
 
-        times_buttons = [types.KeyboardButton(i['time_interval']) for i in times]
+        times_buttons = [types.KeyboardButton(i) for i in times]
 
         times_markup.add(go_to_main_menu).row(*times_buttons)
 
@@ -382,6 +378,16 @@ async def get_phone(message: types.Message, state: FSMContext):
 async def buy(message: types.Message):
     if buy_token.split(':')[1] == 'TEST':
         await bot.send_message(message.chat.id, "Тестовый платеж!!!")
+
+    service_to_pay = None
+    services = get_services()
+    for service in services:
+        if service['id'] == Visit.service_id:
+            service_to_pay = service
+
+
+    PRICE = types.LabeledPrice(label=service_to_pay['name'],
+                               amount=int(float(service_to_pay['price'])) * 100)  # в копейках (руб)
 
     await bot.send_invoice(message.chat.id,
                            title="Оплата услуги",
