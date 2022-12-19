@@ -112,4 +112,5 @@ class WorkingTime(models.Model):
                             verbose_name='День')
 
     def __str__(self):
-        return f"{self.day.name} {self.starting_time} {self.busy}"
+        return f"{self.day.date} {self.starting_time} " \
+               f"{self.day.master.name}/Занято:{self.busy}"
